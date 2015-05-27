@@ -15,25 +15,19 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-# BEGIN Config
+
+#
+# Defines
+#
 
 # Change this if your automysqlbackup is installed somewhere different.
 AUTOMYSQLBACKUP_PATH='./automysqlbackup/automysqlbackup'
 
-# Change this if your gsutil is installed somewhere different.
-GSUTIL_PATH='gsutil'
-
-# WordPress directory
-WORDPRESS_UPLOADS_DIR='/home/httpd/project/web/wp-content/uploads'
-
-# Backup data location
+# Backup data location. must be same as "CONFIG_backup_dir" of automysqlbackup.conf
 DATA_DIR='./data'
 
-# Backup data location
-BACKET_NAME='backup.project.com'
-
-# END Config
-
+# Change this if your gsutil is installed somewhere different.
+GSUTIL_PATH='gsutil'
 
 # Date
 YEAR=$(date +"%Y")
@@ -47,7 +41,7 @@ DAY=$(date +"%d")
 #
 backup_db() {
     echo 'Starting automysqlbackup...'
-    ${AUTOMYSQLBACKUP_PATH} -bc ./automysqlbackup.conf
+    ${AUTOMYSQLBACKUP_PATH} -bc ./config.conf
     echo 'Finished automysqlbackup...'
 }
 
@@ -109,7 +103,7 @@ echo
 #
 # Backup Database
 #
-backup_db
+#backup_db
 if [ ! -e "${DATA_DIR}/daily" ]; then
     printf 'Error: There is no backup files\n'
     error_handler
@@ -119,6 +113,10 @@ fi
 #
 # Backup Upload Files
 #
+
+# load config file
+source ./config.conf
+
 backup_wp_files
 if [ ! -e "${DATA_DIR}/uploads" ]; then
     printf 'Error: There is no upload files\n'
@@ -134,7 +132,7 @@ file_name="${YEAR}${MONTH}${DAY}.tar.gz"
 tar -czf ./${file_name} daily uploads
 
 # Upload
-gs_path="gs://${BACKET_NAME}/${YEAR}/${MONTH}/"
+gs_path="gs://${BUCKET_NAME}/${YEAR}/${MONTH}/"
 printf "Uploading to gs://${gs_path}"
 ${GSUTIL_PATH} cp ./${file_name} ${gs_path}
 
