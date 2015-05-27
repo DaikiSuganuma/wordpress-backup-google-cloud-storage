@@ -3,6 +3,8 @@ WordPress Backup to Google Cloud Storage
 
 This is shell script for backup WordPress Database and upload files located wp-content/uploads.
 
+I created this script for my WordPress sites, but you can use any site for editing "BACKUP_DIRS" in config.conf
+
 This is using "[AutoMySQLBackup](http://sourceforge.net/projects/automysqlbackup/)" for database backup.
 
 
@@ -28,17 +30,17 @@ Setup
 
 7. Update "CONFIG_mysql_dump_password" for connecting database
 
-		# vi automysqlbackup.conf
+		# vi config.conf
 
-8. Update "WORDPRESS_UPLOADS_DIR" for location of wordpress uploads directory
+8. Update "BACKUP_DIRS" for location of backup directories
 
-		# vi main.sh
+		# vi config.conf
 
 9. Update "BUCKET_NAME". this is the bucket name of Google Cloud Storage
 
-		# vi main.sh
+		# vi config.conf
 
-10. Run. You can check outputs of script.
+10. Run. You can check outputs of this script.
 
 		# ./main.sh
 
