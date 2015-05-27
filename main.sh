@@ -15,6 +15,9 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
+# Load config file
+source ./config.conf
+
 
 #
 # Defines
@@ -47,39 +50,60 @@ backup_db() {
 
 
 #
-# [Function] WordPress Files
+# [Function] Backup Files
 #
-backup_wp_files() {
-    echo 'Starting WordPress backup...'
-    # Check WordPress directory
-    if [ ! -e "${WORDPRESS_UPLOADS_DIR}" ]; then
-        printf "Error: wrong wordpress upload path: ${WORDPRESS_UPLOADS_DIR}\n"
-        return 1
-    fi
+backup_files() {
+    echo '======================================================================'
+    echo 'Starting backup files...'
+    echo
+
+    cur_dir=`pwd`
 
     # Reset
-    if [ ! -e "${DATA_DIR}/uploads" ]; then
-        mkdir ${DATA_DIR}/uploads
+    if [ ! -e "${DATA_DIR}/files" ]; then
+        mkdir ${DATA_DIR}/files
     fi
-    rm -rf ${DATA_DIR}/uploads/*
+    rm -rf ${DATA_DIR}/files/*
 
-    if [ ${DAY} = 1 ]; then
-        # full backup
-        cp -rfp ${WORDPRESS_UPLOADS_DIR}/* ${DATA_DIR}/uploads/
-    else
-        # differential backup
-        cur_dir=`pwd`
-        cd ${WORDPRESS_UPLOADS_DIR}
-        echo $cur_dir
-        num=`expr $DAY - 1`
-        # cpio -d : Create leading directories where needed
-        # cpio -p : Run in copy-pass mode
-        # cpio -v : Verbosely list the files processed
-        # cpio -m : Retain previous file modification times when creating files
-        find . -mtime -$num -print0 | cpio --null -dpvm ${cur_dir}/${DATA_DIR}/uploads/
-        cd ${cur_dir}
-    fi
-    echo 'Finished WordPress backup...'
+    # Loop
+    for dir_path in "${BACKUP_DIRS[@]}"; do
+        echo "Backup Directory ( ${dir_path} )"
+        # Check WordPress directory
+        if [ -e "${dir_path}" ]; then
+            # Directory Name
+            dir_name=`echo $dir_path | sed -e 's/\//_/g' `
+            dir_name=`echo $dir_name | sed -e 's/_wp-content_uploads//' `
+            dir_name=`echo $dir_name | sed -e 's/^_//' `
+            echo ${dir_name}
+
+            # Backup
+            if [ ${DAY} = 1 ]; then
+                # full backup
+                cp -rfp ${dir_path}/* ${cur_dir}/${DATA_DIR}/files/${dir_name}/
+            else
+                # differential backup
+                cd ${dir_path}
+                num=`expr $DAY - 1`
+                # cpio -d : Create leading directories where needed
+                # cpio -p : Run in copy-pass mode
+                # cpio -m : Retain previous file modification times when creating files
+                find . -mtime -$num -print0 | cpio --null -dpm ${cur_dir}/${DATA_DIR}/files/${dir_name}/
+            fi
+        fi
+
+    done
+
+    cd ${cur_dir}
+
+    # Show Results
+    echo 
+    echo "Size - Location"
+    echo `du -hsH "${cur_dir}/${DATA_DIR}/files"`
+
+    echo 
+    echo 'Finished backup files...'
+    echo '======================================================================'
+
     return 0
 }
 
@@ -103,7 +127,7 @@ echo
 #
 # Backup Database
 #
-#backup_db
+backup_db
 if [ ! -e "${DATA_DIR}/daily" ]; then
     printf 'Error: There is no backup files\n'
     error_handler
@@ -113,13 +137,9 @@ fi
 #
 # Backup Upload Files
 #
-
-# load config file
-source ./config.conf
-
-backup_wp_files
-if [ ! -e "${DATA_DIR}/uploads" ]; then
-    printf 'Error: There is no upload files\n'
+backup_files
+if [ ! -e "${DATA_DIR}/files" ]; then
+    printf 'Error: There is no files\n'
     error_handler
 fi
 
@@ -129,11 +149,11 @@ fi
 #
 cd ${DATA_DIR}
 file_name="${YEAR}${MONTH}${DAY}.tar.gz"
-tar -czf ./${file_name} daily uploads
+tar -czf ./${file_name} daily files
 
 # Upload
 gs_path="gs://${BUCKET_NAME}/${YEAR}/${MONTH}/"
-printf "Uploading to gs://${gs_path}"
+printf "Uploading to ${gs_path}"
 ${GSUTIL_PATH} cp ./${file_name} ${gs_path}
 
 # Remove all data
