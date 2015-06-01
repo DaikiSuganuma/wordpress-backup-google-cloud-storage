@@ -80,8 +80,12 @@ backup_files() {
             echo ${dir_name}
 
             # Backup
-            if [ ${DAY} = 1 ]; then
+            if [ ${DAY} = "01" ]; then
                 # full backup
+                mkdir ${cur_dir}/${DATA_DIR}/files/${dir_name}/
+                # cp -r : copy directories recursively
+                # cp -f : if an existing destination file cannot be opened, remove it and try again
+                # cp -p : preserve the specified attributes
                 cp -rfp ${dir_path}/* ${cur_dir}/${DATA_DIR}/files/${dir_name}/
             else
                 # differential backup
@@ -147,6 +151,7 @@ if [ ! -e "${DATA_DIR}/files" ]; then
 fi
 
 
+exit 0
 #
 # Archive and Upload to Google Cloud Storage
 #
