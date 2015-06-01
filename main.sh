@@ -151,7 +151,6 @@ if [ ! -e "${DATA_DIR}/files" ]; then
 fi
 
 
-exit 0
 #
 # Archive and Upload to Google Cloud Storage
 #
