@@ -69,7 +69,8 @@ backup_files() {
     rm -rf ${DATA_DIR}/files/*
 
     # Loop
-    for dir_path in "${BACKUP_DIRS[@]}"; do
+    dirs=(`find ${WEB_SOURCE_ROOT} -name 'uploads' -type d`)
+    for dir_path in "${dirs[@]}"; do
         echo "Backup Directory ( ${dir_path} )"
         # Check WordPress directory
         if [ -e "${dir_path}" ]; then

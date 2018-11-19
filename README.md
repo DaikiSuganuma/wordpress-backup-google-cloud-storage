@@ -32,7 +32,7 @@ Setup
 
 		# vi config.conf
 
-8. Update "BACKUP_DIRS" for location of backup directories
+8. Update "WEB_SOURCE_ROOT" for location of backup directories
 
 		# vi config.conf
 
