@@ -160,7 +160,8 @@ file_name="${YEAR}${MONTH}${DAY}.tar.gz"
 tar -czf ./${file_name} daily files
 
 # Upload
-gs_path="gs://${BUCKET_NAME}/${YEAR}/${MONTH}/"
+HOSTNAME=`hostname`
+gs_path="gs://${BUCKET_NAME}/${HOSTNAME}/${YEAR}/${MONTH}/"
 printf "Uploading to ${gs_path}"
 ${GSUTIL_PATH} cp ./${file_name} ${gs_path}
 
