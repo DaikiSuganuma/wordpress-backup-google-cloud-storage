@@ -33,7 +33,7 @@ AUTOMYSQLBACKUP_PATH='./automysqlbackup/automysqlbackup'
 DATA_DIR='./data'
 
 # Change this if your gsutil is installed somewhere different.
-GSUTIL_PATH='gsutil'
+GSUTIL_PATH='/usr/local/bin/gsutil'
 
 # Date
 YEAR=$(date +"%Y")
